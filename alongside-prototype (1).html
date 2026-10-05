@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#eef4fb">
+<title>Alongside</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* neutrals */
+  --ink:#14233a; --ink2:#3a4a60; --muted:#5a6b80; --faint:#73839a;
+  --line:#e3e9f1; --line2:#eef3f8;
+  --app-bg-1:#eef4fb; --app-bg-2:#e2ecf7; --app-bg-3:#d7e4f3;
+  --card:#ffffff;
+  /* brand / primary = trust, navigation, "you" */
+  --blue:#2a56d6; --blue-ink:#1e44b4; --blue-soft:#e9eefc; --blue-soft2:#dbe4fb;
+  /* semantic safety scale */
+  --clear:#1c7a4f; --clear-bg:#e1f1e9;
+  --amber:#8f5e0e; --amber-bg:#f7ecd2;
+  --warn:#b22c3b; --warn-bg:#fae2e4;
+  /* sydney rail lines */
+  --t2:#0098cd; --t3:#f37021; --t8:#00954c;
+  --radius:20px; --radius-sm:14px;
+  --shadow:0 14px 36px rgba(20,40,72,.13);
+  --shadow-sm:0 3px 12px rgba(20,40,72,.07);
+  --shadow-fab:0 10px 24px rgba(42,86,214,.42);
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --topbar-h:60px; --nav-h:84px; --gutter:22px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:#cbdcee;color:var(--ink);
+  font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  line-height:1.45;-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;cursor:pointer;color:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+::selection{background:#c6d6ff}
+svg{display:block}
+.i{width:22px;height:22px;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- device shell ---------- */
+.stage{height:100%;display:flex;align-items:center;justify-content:center;padding:22px}
+.device{position:relative;width:402px;height:860px;max-height:96vh;background:#0f1620;border-radius:52px;padding:11px;
+  box-shadow:0 44px 92px rgba(14,30,52,.44);overflow:hidden}
+.device::after{content:"";position:absolute;z-index:40;top:14px;left:50%;transform:translateX(-50%);width:120px;height:30px;background:#0f1620;border-radius:0 0 18px 18px;pointer-events:none}
+.viewport{position:relative;width:100%;height:100%;border-radius:42px;overflow:hidden;
+  background:linear-gradient(170deg,var(--app-bg-1),var(--app-bg-2) 55%,var(--app-bg-3));display:flex;flex-direction:column}
+.statusbar{height:46px;flex:none;display:flex;align-items:flex-end;justify-content:space-between;padding:0 26px 6px;font-size:13.5px;font-weight:700;color:var(--ink);z-index:10}
+.statusbar .sig{display:flex;align-items:center;gap:6px}
+.statusbar .sig svg{width:17px;height:12px}
+
+/* ---------- top bar ---------- */
+.topbar{flex:none;height:var(--topbar-h);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 var(--gutter);z-index:9;position:relative}
+body.auth .topbar{display:none}
+.brand{display:flex;align-items:center;gap:9px;font-size:20px;font-weight:800;letter-spacing:-.4px;border:0;background:none;padding:6px 2px}
+.brand .logo{width:30px;height:30px;border-radius:9px;background:var(--blue);display:grid;place-items:center;color:#fff;box-shadow:0 4px 10px rgba(42,86,214,.4)}
+.brand .logo svg{width:18px;height:18px;stroke-width:2.2}
+.circlebtn{width:42px;height:42px;border-radius:50%;background:#ffffffd0;border:1px solid #ffffff;box-shadow:var(--shadow-sm);display:grid;place-items:center;color:var(--ink2);backdrop-filter:blur(4px)}
+.circlebtn:hover{background:#fff}
+.circlebtn .i{width:20px;height:20px}
+.topbar.contextual{justify-content:flex-start}
+.backbtn{display:inline-flex;align-items:center;gap:5px;border:0;background:none;color:var(--blue);font-weight:700;font-size:15px;padding:8px 6px 8px 0}
+.backbtn .i{width:22px;height:22px;stroke-width:2.2}
+.ctxtitle{font-size:17px;font-weight:700;letter-spacing:-.3px;position:absolute;left:50%;transform:translateX(-50%);max-width:62%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- scroll / screens ---------- */
+.scroll{position:relative;flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none;padding:6px var(--gutter) 26px}
+.scroll::-webkit-scrollbar{width:0}
+body:not(.auth) .scroll{padding-bottom:calc(var(--nav-h) + 24px)}
+body.auth .scroll{padding-top:14px}
+.screen{display:none;min-height:100%;animation:fade .26s var(--ease)}
+.screen.active{display:flex;flex-direction:column}
+@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.phone.reduced .screen{animation:none}
+/* bottom-anchored primary actions */
+.actions{margin-top:auto;padding-top:24px;display:flex;flex-direction:column;gap:11px}
+.actions .btn+.btn{margin-top:0}
+.centerblock{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 4px}
+
+/* ---------- bottom nav ---------- */
+.nav{position:absolute;left:0;right:0;bottom:0;height:var(--nav-h);z-index:9;display:flex;align-items:flex-start;justify-content:space-around;
+  padding:12px 8px calc(10px + env(safe-area-inset-bottom,0px));
+  background:#fffffff2;border-top:1px solid var(--line);backdrop-filter:blur(12px);box-shadow:0 -6px 20px rgba(20,40,72,.06)}
+body.auth .nav{display:none}
+.nav button{flex:1;max-width:76px;border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;
+  color:var(--muted);font-size:11px;font-weight:700;border-radius:14px;padding:2px 0}
+.nav button .i{width:24px;height:24px;stroke-width:1.9}
+.nav button[aria-current="page"]{color:var(--blue)}
+.nav button[aria-current="page"] .i{stroke-width:2.4}
+/* raised center safety action */
+.nav .navcenter{position:relative;color:var(--blue)}
+.nav .navcenter .fab{width:60px;height:60px;border-radius:50%;margin-top:-30px;margin-bottom:3px;
+  background:linear-gradient(160deg,#3a63e4,#2246be);color:#fff;display:grid;place-items:center;
+  box-shadow:var(--shadow-fab);border:4px solid #fff;transition:transform .12s}
+.nav .navcenter .fab .i{width:26px;height:26px;stroke-width:2.1}
+.nav .navcenter:active .fab{transform:scale(.94)}
+.nav .navcenter[aria-current="page"] .fab{background:linear-gradient(160deg,#2a56d6,#1a3ca8)}
+.nav .navcenter[aria-current="page"]{color:var(--blue-ink)}
+
+/* ---------- typography ---------- */
+h1,h2,h3,h4{margin:0;letter-spacing:-.5px;line-height:1.14}
+.pagehead{margin:10px 2px 18px}
+.pagehead h1{font-size:27px;font-weight:800}
+.pagehead p{margin:8px 0 0;color:var(--muted);font-size:14.5px;line-height:1.5}
+.eyebrow{font-size:12.5px;font-weight:700;color:var(--blue);margin:0 0 13px;letter-spacing:.2px}
+.sectionhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:24px 2px 11px}
+.sectionhead h2{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+.sectionhead h2 .i{width:18px;height:18px;color:var(--blue)}
+.link{border:0;background:none;color:var(--blue);font-weight:700;font-size:13px;padding:6px 2px}
+.link:hover{text-decoration:underline}
+
+/* ---------- cards & surfaces ---------- */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:16px}
+.soft{background:var(--card);border-radius:var(--radius);padding:15px 16px;box-shadow:var(--shadow-sm)}
+.band{background:var(--blue-soft);border-radius:var(--radius-sm);padding:13px 16px}
+.band strong{font-size:15.5px}
+.band p{margin:3px 0 0;font-size:13px;color:var(--ink2)}
+
+/* ---------- buttons ---------- */
+.btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:54px;border:0;border-radius:16px;
+  font-weight:700;font-size:15.5px;padding:14px 16px;transition:transform .08s,background .15s,box-shadow .15s}
+.btn:active{transform:scale(.985)}
+.btn .i{width:20px;height:20px}
+.btn-primary{background:var(--blue);color:#fff;box-shadow:0 8px 20px rgba(42,86,214,.26)}
+.btn-primary:hover{background:var(--blue-ink)}
+.btn-primary:disabled{background:#aebdd6;box-shadow:none;cursor:not-allowed}
+.btn-soft{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm)}
+.btn-soft:hover{background:#f6f9fd}
+.btn-tint{background:var(--blue-soft);color:var(--blue-ink)}
+.btn-tint:hover{background:var(--blue-soft2)}
+.btn-danger{background:var(--warn);color:#fff;box-shadow:0 8px 20px rgba(178,44,59,.26)}
+.btn-danger:hover{background:#991f2d}
+.btn-ghost{background:transparent;color:var(--ink2);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn-ghost:hover{background:#ffffff8c}
+.btnrow{display:flex;gap:10px}
+.btnrow .btn{margin-top:0}
+.tiny{font-size:12.5px;color:var(--muted);text-align:center;margin:4px 4px 0;line-height:1.5}
+
+/* ---------- forms ---------- */
+.field{display:block;margin-bottom:15px}
+.field>span{display:block;font-size:13.5px;font-weight:700;margin-bottom:7px;color:var(--ink2)}
+.field input,.field select,.field textarea{width:100%;min-height:54px;border:1.5px solid var(--line);background:#fff;border-radius:14px;
+  padding:14px;font:inherit;font-size:16px;color:var(--ink)}
+.field textarea{min-height:92px;resize:vertical;line-height:1.5}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px #2a56d622}
+.field input[readonly]{background:#f4f7fb;color:var(--ink2)}
+.inputwrap{position:relative}
+.inputwrap .i{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--faint);width:20px;height:20px}
+.inputwrap input{padding-left:46px}
+.err{color:var(--warn);font-size:13.5px;font-weight:600;margin:-7px 2px 13px}
+.hint{color:var(--muted);font-size:13px;margin:0 2px 14px;line-height:1.5;display:flex;gap:7px;align-items:flex-start}
+.hint .i{width:17px;height:17px;flex:none;margin-top:1px;color:var(--faint)}
+
+/* ---------- onboarding ---------- */
+body.auth .viewport{background:linear-gradient(165deg,#f4f8fd,#e6f0fa 50%,#d2e2f4)}
+.biglogo{width:92px;height:92px;border-radius:26px;background:var(--blue);display:grid;place-items:center;color:#fff;box-shadow:0 20px 44px rgba(42,86,214,.4);margin-bottom:26px}
+.biglogo svg{width:52px;height:52px;stroke-width:2}
+.welcome-h{font-size:42px;font-weight:800;letter-spacing:-1.4px}
+.welcome-tag{color:var(--ink2);font-size:16.5px;margin:14px 0 0;max-width:280px;line-height:1.5}
+.dots{display:flex;gap:7px;justify-content:center;margin:18px 0 10px;flex:none}
+.dots i{width:7px;height:7px;border-radius:50%;background:#b7c8db;transition:width .25s,background .25s}
+.dots i.on{width:22px;background:var(--blue)}
+.onb-mid{flex:1;display:flex;flex-direction:column;justify-content:center;padding:8px 0}
+.slide-illus{height:230px;border-radius:24px;margin:4px 0 26px;display:grid;place-items:center;background:var(--blue-soft);color:var(--blue);position:relative;overflow:hidden}
+.slide-illus svg{width:92px;height:92px;stroke-width:1.6;position:relative}
+.slide-illus .ring{position:absolute;border-radius:50%;border:2px solid #2a56d61f}
+.onb-mid h2{font-size:26px;font-weight:800;letter-spacing:-.7px;margin-bottom:9px}
+.onb-mid p{color:var(--ink2);font-size:15.5px;line-height:1.55;margin:0}
+.authlink{text-align:center;font-size:14.5px;color:var(--muted);margin-top:4px}
+.authlink button{border:0;background:none;color:var(--blue);font-weight:700;font-size:14.5px}
+.social{display:flex;align-items:center;gap:9px;justify-content:center;background:#fff;box-shadow:var(--shadow-sm);
+  border:0;border-radius:16px;min-height:54px;width:100%;font-weight:700;font-size:15px}
+.social .i{width:20px;height:20px}
+.divider{display:flex;align-items:center;gap:12px;color:var(--faint);font-size:12.5px;font-weight:600;margin:16px 0}
+.divider::before,.divider::after{content:"";height:1px;background:var(--line);flex:1}
+.pill-select{display:flex;flex-wrap:wrap;gap:9px;margin:4px 0 2px}
+.pill-select button{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:11px 16px;font-size:14px;font-weight:600;color:var(--ink2)}
+.pill-select button[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-soft);color:var(--blue-ink)}
+
+/* ---------- journey / map ---------- */
+.journey{position:relative;height:188px;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);background:#dde7df}
+.journey.short{height:140px}
+.journey.tall{height:214px}
+.journey svg.map{width:100%;height:100%;display:block}
+.journey .maplabel{position:absolute;left:13px;top:13px;display:flex;align-items:center;gap:7px;background:#ffffffe8;
+  padding:7px 11px;border-radius:11px;font-size:12.5px;font-weight:700;box-shadow:var(--shadow-sm);max-width:62%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.journey .maplabel::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--blue);flex:none}
+.arrival{position:absolute;left:0;right:0;bottom:0;background:#ffffffee;backdrop-filter:blur(6px);padding:12px 16px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #fff}
+.arrival .dest{display:flex;align-items:center;gap:9px;font-size:14.5px;font-weight:700;min-width:0}
+.arrival .dest .i{width:19px;height:19px;color:var(--ink2);flex:none}
+.arrival .dest .dname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.arrival .mins{text-align:right;font-size:11px;color:var(--muted);line-height:1.2;flex:none}
+.arrival .mins strong{display:block;font-size:23px;font-weight:800;letter-spacing:-.6px;color:var(--ink)}
+.linechip{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:12.5px;line-height:1;color:#0a2230;
+  background:color-mix(in srgb,var(--rail,#2a56d6) 15%,#fff);border-radius:999px;padding:5px 10px}
+.linechip::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--rail,#2a56d6)}
+[data-line="T2"]{--rail:var(--t2)}[data-line="T3"]{--rail:var(--t3)}[data-line="T8"]{--rail:var(--t8)}
+
+/* destination picker */
+.destpick{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:#fff;border:0;border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);padding:14px 16px;margin-bottom:12px}
+.destpick .ic{width:42px;height:42px;border-radius:12px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;flex:none}
+.destpick small{display:block;color:var(--muted);font-size:12.5px;font-weight:600}
+.destpick strong{font-size:17px}
+.destpick .chev{margin-left:auto;color:var(--faint)}
+
+/* night nudge */
+.nightcue{display:flex;align-items:center;gap:12px;background:#17273b;color:#eaf1fb;border-radius:var(--radius);padding:14px 16px;margin-bottom:13px}
+.nightcue .ic{width:38px;height:38px;border-radius:11px;background:#ffffff1a;display:grid;place-items:center;flex:none;color:#cfe0f7}
+.nightcue strong{font-size:14px;display:block}
+.nightcue p{margin:2px 0 0;font-size:12.5px;color:#b7c6da;line-height:1.4}
+.nightcue .x{margin-left:auto;border:0;background:none;color:#9fb2c8;padding:4px}
+
+/* reports */
+.railfilter{display:inline-flex;gap:4px;background:#ffffffb8;border-radius:999px;padding:4px;margin-bottom:12px}
+.railfilter button{display:inline-flex;align-items:center;gap:7px;border:0;background:none;border-radius:999px;min-height:40px;padding:0 14px;font-weight:800;font-size:13.5px;color:var(--ink2)}
+.railfilter button::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--rail,#999)}
+.railfilter button[aria-pressed="true"]{background:#fff;box-shadow:var(--shadow-sm);color:var(--ink)}
+.reports{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden}
+.report{display:block;width:100%;text-align:left;border:0;background:none;padding:15px 16px 15px 17px;border-bottom:1px solid var(--line2);position:relative}
+.report:last-child{border-bottom:0}
+.report::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:4px;border-radius:0 3px 3px 0;background:var(--warn)}
+.report.amber::before{background:var(--amber)}
+.report.fading{opacity:.8}
+.report:hover{background:#f7faff}
+.report .rtop{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+.report .rtop strong{font-size:14.5px}
+.report .badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:7px;background:var(--warn-bg);color:var(--warn);white-space:nowrap}
+.report .badge.amber{background:var(--amber-bg);color:var(--amber)}
+.report .what{font-size:14px;color:var(--ink2);margin:0 0 7px}
+.report .rfoot{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.report .rfoot .i{width:14px;height:14px}
+.report .verify{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--clear);font-weight:700;margin-left:auto}
+.report .verify .i{width:14px;height:14px}
+.emptyreports{padding:22px 16px;text-align:center;color:var(--muted);font-size:13.5px}
+
+/* carriage crowd */
+.crowd{display:flex;gap:7px}
+.car{flex:1;border-radius:14px;padding:11px 6px;text-align:center;font-size:11px;font-weight:700;background:#eef3f8;color:var(--muted)}
+.car small{display:block;font-size:10px;font-weight:600;color:var(--faint);margin-bottom:3px}
+.car b{font-size:12.5px}
+.car.busy{background:var(--amber-bg);color:var(--amber)}
+.car.quiet{background:var(--clear-bg);color:var(--clear)}
+.car.pick{outline:2px solid var(--blue);outline-offset:-2px;background:var(--blue-soft);color:var(--blue-ink)}
+
+/* route options */
+.priorities{display:flex;gap:7px;margin-bottom:15px}
+.priorities button{flex:1;min-height:46px;border:0;border-radius:13px;background:#ffffffb8;color:var(--muted);font-size:12.5px;font-weight:700;padding:6px 4px}
+.priorities button[aria-pressed="true"]{background:var(--blue);color:#fff}
+.routeopt{display:block;width:100%;text-align:left;background:#fff;border:0;border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:16px;margin-bottom:12px}
+.routeopt:hover{box-shadow:var(--shadow)}
+.routeopt.chosen{outline:2px solid var(--blue);outline-offset:-2px}
+.routeopt .otop{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.routeopt .oname{font-size:16.5px;font-weight:700}
+.routeopt .odur{font-size:23px;font-weight:800;letter-spacing:-.6px}
+.routeopt .odur small{font-size:13px;font-weight:600;color:var(--muted)}
+.legs{display:flex;align-items:center;gap:11px;margin:12px 0;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.legs span{display:inline-flex;align-items:center;gap:5px}
+.legs .i{width:16px;height:16px}
+.evidence{display:flex;flex-wrap:wrap;gap:6px}
+.evidence span{font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:999px;background:var(--blue-soft);color:var(--blue-ink)}
+.evidence .good{background:var(--clear-bg);color:var(--clear)}
+.evidence .warn{background:var(--warn-bg);color:var(--warn)}
+.evidence .cau{background:var(--amber-bg);color:var(--amber)}
+.routeopt .pick{margin-top:11px;font-size:12.5px;font-weight:700;color:var(--blue);display:flex;align-items:center;gap:5px}
+
+/* steps / facts / prose */
+.steps{list-style:none;margin:4px 0;padding:0}
+.steps li{position:relative;padding:0 0 20px 26px;border-left:2px solid var(--line);margin-left:5px}
+.steps li:last-child{border-left-color:transparent;padding-bottom:2px}
+.steps li::before{content:"";position:absolute;left:-7px;top:3px;width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--blue)}
+.steps li strong{font-size:14.5px}
+.steps li span{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+.facts{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:2px 16px}
+.facts>div{padding:13px 0;border-bottom:1px solid var(--line2)}
+.facts>div:last-child{border-bottom:0}
+.facts dt{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:3px}
+.facts dd{margin:0;font-size:15px;font-weight:600}
+.prose{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:15px 16px;font-size:14px;color:var(--ink2);line-height:1.55}
+
+/* situation chips */
+.riskgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:4px 0 2px}
+.riskopt{display:flex;align-items:center;gap:9px;background:#fff;border-radius:14px;box-shadow:var(--shadow-sm);padding:13px 11px;font-size:13px;font-weight:600;cursor:pointer;line-height:1.3;position:relative}
+.riskopt .i{width:20px;height:20px;color:var(--blue);flex:none}
+.riskopt input{position:absolute;opacity:0;pointer-events:none}
+.riskopt:has(input:checked){outline:2px solid var(--blue);outline-offset:-2px;background:var(--blue-soft)}
+
+/* contacts */
+.contact{display:flex;align-items:center;gap:13px;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:13px 15px;margin-bottom:10px}
+.avatar{width:46px;height:46px;border-radius:50%;background:var(--blue-soft2);color:var(--blue-ink);display:grid;place-items:center;font-weight:800;font-size:18px;flex:none}
+.avatar.lg{width:72px;height:72px;font-size:28px}
+.avatar.sm{width:38px;height:38px;font-size:15px}
+.contact .meta{flex:1;min-width:0}
+.contact .meta strong{font-size:15.5px;display:block}
+.contact .meta small{color:var(--muted);font-size:12.5px}
+.contact .del{border:0;background:none;color:var(--faint);padding:8px}
+.contact .del:hover{color:var(--warn)}
+.radio-contact{display:flex;align-items:center;gap:13px;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:14px 15px;margin-bottom:10px;cursor:pointer}
+.radio-contact input{position:absolute;opacity:0}
+.radio-contact:has(input:checked){outline:2px solid var(--blue);outline-offset:-2px}
+.radio-contact .check{margin-left:auto;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none}
+.radio-contact:has(input:checked) .check{border-color:var(--blue);background:var(--blue);box-shadow:inset 0 0 0 3px #fff}
+
+/* safety hub */
+.hubgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hubtile{display:flex;flex-direction:column;gap:10px;align-items:flex-start;text-align:left;background:#fff;border:0;border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:16px;min-height:120px}
+.hubtile:hover{box-shadow:var(--shadow)}
+.hubtile .ic{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:#fff}
+.hubtile strong{font-size:15px}
+.hubtile small{font-size:12px;color:var(--muted);line-height:1.4;font-weight:500}
+.hubtile.full{grid-column:1/-1;min-height:0;flex-direction:row;align-items:center}
+.hubtile.full .ic{flex:none}
+.hubtile.full div{flex:1;min-width:0}
+.hubtile.full strong{display:block;margin-bottom:2px}
+.hubtile.full small{display:block}
+
+/* perm rows */
+.permrow{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line2)}
+.permrow:last-child{border-bottom:0}
+.permrow .i{width:22px;height:22px;color:var(--blue);margin-top:1px;flex:none}
+.permrow strong{font-size:14.5px}
+.permrow p{margin:2px 0 0;font-size:13px;color:var(--muted);line-height:1.45}
+
+/* trip watch */
+.wline{display:flex;gap:12px;padding:11px 0}
+.wline .wmark{width:14px;height:14px;border:2px solid #adbfd2;border-radius:50%;margin-top:3px;flex:none}
+.wline.done .wmark{background:var(--blue);border-color:var(--blue)}
+.wline strong{font-size:14.5px}
+.wline small{display:block;color:var(--muted);font-size:12.5px;margin-top:1px}
+.checkin{background:var(--blue-soft);border-radius:var(--radius);padding:16px;margin:16px 0}
+.checkin strong{font-size:16px}
+.checkin p{margin:4px 0 13px;font-size:13px;color:var(--ink2)}
+
+/* settings */
+.setrow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 0;border-bottom:1px solid var(--line2)}
+.setrow:last-child{border-bottom:0}
+.setrow .lbl strong{font-size:15px;display:block}
+.setrow .lbl small{color:var(--muted);font-size:12.5px}
+.switch{appearance:none;width:48px;height:29px;border-radius:16px;background:#b6c6d8;position:relative;flex:none;cursor:pointer;transition:background .2s}
+.switch:checked{background:var(--blue)}
+.switch::after{content:"";position:absolute;top:3.5px;left:3.5px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s}
+.switch:checked::after{transform:translateX(19px)}
+
+/* result marks */
+.resultmark{width:76px;height:76px;border-radius:50%;background:var(--clear-bg);color:var(--clear);display:grid;place-items:center;margin:0 auto 20px}
+.resultmark.help{background:var(--blue-soft);color:var(--blue)}
+.resultmark .i{width:38px;height:38px;stroke-width:2.2}
+.codebox{text-align:center;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:24px}
+.codebox .code{font-size:40px;font-weight:800;letter-spacing:4px;font-variant-numeric:tabular-nums}
+.codebox p{margin:8px 0 0;font-size:12.5px;color:var(--muted)}
+
+/* hold to confirm */
+.holdbtn{position:relative;overflow:hidden}
+.holdbtn .fill{position:absolute;inset:0;background:#ffffff38;width:0}
+
+/* identity header */
+.idhead{display:flex;align-items:center;gap:15px;margin:8px 0 20px}
+.idhead strong{font-size:22px;font-weight:800;letter-spacing:-.4px}
+.idhead small{color:var(--muted);font-size:13.5px}
+
+/* preview tag */
+.previewtag{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--amber);background:var(--amber-bg);padding:5px 11px;border-radius:999px}
+.previewtag .i{width:14px;height:14px}
+
+/* toast */
+.toast{position:absolute;z-index:30;left:18px;right:18px;top:52px;background:#11263c;color:#fff;border-radius:16px;padding:13px 16px;box-shadow:0 10px 30px rgba(10,25,45,.3);transform:translateY(-14px);opacity:0;visibility:hidden;transition:.2s}
+.toast.show{transform:none;opacity:1;visibility:visible}
+.toast strong{display:block;font-size:14px}
+.toast span{font-size:12.5px;color:#c4d2e3}
+
+.hint-desktop{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);font-size:12px;color:#44607f;background:#ffffffcc;padding:8px 15px;border-radius:999px;box-shadow:var(--shadow-sm);z-index:5}
+
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.phone.reduced *{animation:none!important;transition:none!important}
+@media(max-width:860px){.hint-desktop{display:none}}
+@media(max-width:480px){
+  body{overflow:auto}
+  .stage{padding:0;display:block;height:auto;min-height:100%}
+  .device{width:100%;height:100vh;height:100dvh;max-height:none;border-radius:0;padding:0}
+  .device::after{display:none}
+  .viewport{border-radius:0;height:100vh;height:100dvh}
+  .statusbar{padding-top:env(safe-area-inset-top,0px);height:calc(40px + env(safe-area-inset-top,0px));align-items:center}
+}
+</style>
+</head>
+<body class="auth">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/><path d="M9.5 21v-6h5v6"/></symbol>
+<symbol id="route" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="5" r="2.4"/><path d="M8.4 19H15a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h6.6"/></symbol>
+<symbol id="flag" viewBox="0 0 24 24"><path d="M5 22V4c4-3 8 3 14 0v11c-6 3-10-3-14 0"/></symbol>
+<symbol id="shield" viewBox="0 0 24 24"><path d="M12 3c2 1.5 4.5 2.5 7 2.5V12c0 5-3.3 7.6-7 9-3.7-1.4-7-4-7-9V5.5C7.5 5.5 10 4.5 12 3Z"/><path d="M12 8.5v4"/><path d="M12 15.5h.01"/></symbol>
+<symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></symbol>
+<symbol id="users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5.2a3.4 3.4 0 0 1 0 6.6"/><path d="M17.5 14.5A6 6 0 0 1 21 20"/></symbol>
+<symbol id="pin" viewBox="0 0 24 24"><path d="M20 10c0 5.2-8 11-8 11s-8-5.8-8-11a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+<symbol id="train" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="14" rx="4"/><path d="M5 11h14"/><circle cx="8.5" cy="14" r="1"/><circle cx="15.5" cy="14" r="1"/><path d="m7 21 2-3"/><path d="m17 21-2-3"/></symbol>
+<symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></symbol>
+<symbol id="share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="m8.3 13.4 7.4 4.3"/><path d="m15.7 6.3 -7.4 4.3"/></symbol>
+<symbol id="bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10.5 19a1.8 1.8 0 0 0 3 0"/></symbol>
+<symbol id="belloff" viewBox="0 0 24 24"><path d="M9 5.3A6 6 0 0 1 18 9c0 2.6.6 4.3 1.3 5.3"/><path d="M17 15H4s2-1 2-6c0-.6.1-1.2.2-1.7"/><path d="M10.5 19a1.8 1.8 0 0 0 3 0"/><path d="m3 3 18 18"/></symbol>
+<symbol id="phone" viewBox="0 0 24 24"><path d="M15.5 17.5a1 1 0 0 0 1.2-.3l.5-.6a2 2 0 0 1 1.5-.7H21a1 1 0 0 1 1 1v2.4a2 2 0 0 1-2 2A18 18 0 0 1 2 4.5a2 2 0 0 1 2-2H6a2 2 0 0 1 1 1l.4.9a2 2 0 0 1-.5 2.3l-.6.5a1 1 0 0 0-.2 1.2 14 14 0 0 0 6.4 6.4"/></symbol>
+<symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></symbol>
+<symbol id="checkcircle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+<symbol id="chevl" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+<symbol id="chevr" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+<symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+<symbol id="eyeoff" viewBox="0 0 24 24"><path d="M10.7 5.2A10 10 0 0 1 21 11.6a10 10 0 0 1-1.4 2.4"/><path d="M14 14a3 3 0 0 1-4.2-4.2"/><path d="M17.5 17.5A10 10 0 0 1 3 11.6a10 10 0 0 1 4.3-5"/><path d="m3 3 18 18"/></symbol>
+<symbol id="activity" viewBox="0 0 24 24"><path d="M3 12h4l2.5 7 5-14 2.5 7H21"/></symbol>
+<symbol id="footprints" viewBox="0 0 24 24"><path d="M4 15c-.5-2 0-4 0-6 0-2 1-4 2.5-4S8 7 7.5 10c-.3 2 .5 3 .5 5a2 2 0 1 1-4 0Z"/><path d="M20 17c.5-2 0-4 0-6 0-2-1-4-2.5-4S16 9 16.5 12c.3 2-.5 3-.5 5a2 2 0 1 0 4 0Z"/></symbol>
+<symbol id="swap" viewBox="0 0 24 24"><path d="M8 4 4 8l4 4"/><path d="M4 8h16"/><path d="m16 20 4-4-4-4"/><path d="M20 16H4"/></symbol>
+<symbol id="lock" viewBox="0 0 24 24"><rect x="4.5" y="10" width="15" height="10" rx="2.5"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10"/></symbol>
+<symbol id="mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m3.5 7 8.5 6 8.5-6"/></symbol>
+<symbol id="trash" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7"/></symbol>
+<symbol id="edit" viewBox="0 0 24 24"><path d="M12 20h8"/><path d="M16.5 3.5a2 2 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+<symbol id="moon" viewBox="0 0 24 24"><path d="M20 15.5A8 8 0 1 1 9 4.5a6.5 6.5 0 0 0 11 11Z"/></symbol>
+<symbol id="headphones" viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="13" width="4" height="7" rx="2"/><rect x="17" y="13" width="4" height="7" rx="2"/></symbol>
+<symbol id="map" viewBox="0 0 24 24"><path d="m9 4 6 2 5.5-2v14L15 20l-6-2-5.5 2V6Z"/><path d="M9 4v14M15 6v14"/></symbol>
+<symbol id="star" viewBox="0 0 24 24"><path d="m12 3 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.2l1-5.8-4.3-4.1 5.9-.9Z"/></symbol>
+<symbol id="smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></symbol>
+<symbol id="google" viewBox="0 0 24 24" stroke="none" fill="currentColor"><path d="M21.6 12.2c0-.6 0-1.2-.2-1.8H12v3.5h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.2Z"/><path d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 .9-3.4.9-2.6 0-4.8-1.7-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22Z"/><path d="M6.4 13.9a6 6 0 0 1 0-3.8V7.5H3.1a10 10 0 0 0 0 9l3.3-2.6Z"/><path d="M12 6c1.5 0 2.8.5 3.8 1.5l2.8-2.8A10 10 0 0 0 3.1 7.5l3.3 2.6C7.2 7.7 9.4 6 12 6Z"/></symbol>
+<symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></symbol>
+</svg>
+
+<div class="stage">
+<div class="device"><div class="phone viewport" id="phone">
+  <div class="statusbar"><span id="clockNow">9:41</span>
+    <span class="sig">LTE
+      <svg viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" fill="none" stroke="currentColor"/><rect x="3" y="3" width="16" height="7" rx="1.5" fill="currentColor"/><path d="M24 4.5v4" stroke="currentColor" stroke-width="2.4"/></svg>
+    </span>
+  </div>
+  <header class="topbar" id="topbar"></header>
+  <main class="scroll" id="scroll"></main>
+  <nav class="nav" id="nav" aria-label="Main">
+    <button data-tab="home"><svg class="i"><use href="#home"/></svg>Home</button>
+    <button data-tab="routes"><svg class="i"><use href="#route"/></svg>Routes</button>
+    <button data-tab="safety" class="navcenter"><span class="fab"><svg class="i"><use href="#shield"/></svg></span>Safety</button>
+    <button data-tab="report"><svg class="i"><use href="#flag"/></svg>Report</button>
+    <button data-tab="profile"><svg class="i"><use href="#user"/></svg>You</button>
+  </nav>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div></div>
+</div>
+<div class="hint-desktop">Prototype · click through it like a real app · sample data only</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+const scroll=$('#scroll'), topbar=$('#topbar'), nav=$('#nav'), phone=$('#phone'), toastEl=$('#toast');
+function ic(n,cls='i'){return '<svg class="'+cls+'"><use href="#'+n+'"/></svg>'}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+/* ---------------- state ---------------- */
+const DEFAULT={
+  onboarded:false, loggedIn:false,
+  user:{name:'Elis', email:''},
+  origin:'Liverpool Station',
+  destination:'Fairfield',
+  contacts:[],
+  routeId:'report',
+  trip:{active:false,ended:false,routeId:'report',checked:false},
+  sharing:{active:false,contact:null,routeId:null},
+  settings:{reduceMotion:false,nightNudge:true,notify:true},
+  nudgeDismissed:false
+};
+let S=load();
+function load(){try{const r=JSON.parse(localStorage.getItem('alongside_v2'));if(r)return Object.assign(structuredClone(DEFAULT),r)}catch(e){}return structuredClone(DEFAULT)}
+function save(){try{localStorage.setItem('alongside_v2',JSON.stringify(S))}catch(e){}}
+
+/* ---------------- data ---------------- */
+const BASE={
+  report:{name:'Safer route',line:'T8',walk:10,changes:1,mins:38,
+    tags:[['Fewer recent reports','good'],['Less crowded','good'],['Staffed after 8pm','']],
+    why:'No reports at the interchange tonight. The middle carriage is running quieter, the change is at a staffed, well-lit station, and there are more people around on this line after dark.',
+    steps:[['[ORIGIN]','Board T8 — rear doors, middle carriage'],['Interchange','One change at a staffed station'],['[DEST]','Short walk to your stop · about [MINS] min total']]},
+  usual:{name:'Your usual line',line:'T2',walk:8,changes:0,mins:33,
+    tags:[['Usual route',''],['1 recent report','cau']],
+    why:'This is the line you normally take, so it is direct with no changes. A confrontation was reported near platform 2 at Liverpool a little while ago — worth a glance before you board.',
+    steps:[['[ORIGIN]','Board T2 — direct service'],['[DEST]','No changes · about [MINS] min total']]},
+  fast:{name:'Fastest route',line:'T3',walk:6,changes:1,mins:31,
+    tags:[['Quickest',''],['3 recent reports','warn'],['Crowded','cau']],
+    why:'This gets you there soonest, but there are three recent reports on this line and the change is at a quieter, unstaffed platform. Faster is not always the call at night.',
+    steps:[['[ORIGIN]','Board T3 — fastest service'],['Interchange','One change at a quieter platform'],['[DEST]','Short walk · about [MINS] min total']]}
+};
+const ORDER={reports:['report','usual','fast'],time:['fast','usual','report'],changes:['usual','report','fast']};
+const RAIL={T2:'var(--t2)',T3:'var(--t3)',T8:'var(--t8)'};
+const SAVED=[{dest:'Fairfield',route:'usual',label:'Home',sub:'Liverpool → Fairfield'},
+             {dest:'Central',route:'report',label:'Uni',sub:'Liverpool → Central'}];
+let REP={
+ T2:[{stn:'Liverpool Station',what:'Confrontation near platform 2',sev:'warn',mins:12,conf:4,age:'recent'},
+     {stn:'Central Station',what:'Overcrowding on the concourse',sev:'amber',mins:25,conf:1,age:'fading'}],
+ T8:[{stn:'Wolli Creek Station',what:'Crowding near the entrance',sev:'amber',mins:8,conf:2,age:'recent'}],
+ T3:[]
+};
+let repLine='T2';
+function routeMins(id){return BASE[id].mins}
+function originShort(){return S.origin.replace(/ Station$/,'')}
+function initial(n){return (String(n||'?').trim().charAt(0)||'?').toUpperCase()}
+function isNight(){const h=new Date().getHours();return h>=19||h<5}
+
+/* ---------------- router ---------------- */
+const VIEWS={}, HOOKS={};
+const TABS=['home','routes','safety','report','profile'];
+const AUTH=['welcome','onb1','onb2','onb3','signup','login','setPerms','setJourney','setContacts','setDone'];
+const TITLES={routeDetail:'Route details',reportReview:'Check report',reportDone:'Report sent',reportDetail:'Report details',
+  share:'Share trip',sharing:'Sharing',recipient:"Elis's trip",watch:'Trip watch',help:'Get help',helpConfirm:'Confirm',
+  helpDone:'Done',locationCode:'Location code',destination:'Plan a trip',savedRoutes:'Saved routes',contacts:'Trusted contacts',
+  addContact:'Add contact',editProfile:'Edit profile',settings:'Settings'};
+let stack=[], current=null;
+
+function go(name,{reset=false,replace=false}={}){
+  if(current && !AUTH.includes(current) && !AUTH.includes(name) && !replace && !reset && name!==current){
+    if(!TABS.includes(name) || !TABS.includes(current)) stack.push(current);
+  }
+  if(reset) stack=[];
+  if(TABS.includes(name)) stack=[];
+  current=name; render(name);
+}
+function back(){const p=stack.pop(); if(p){current=p;render(p)} else go('home',{reset:true})}
+
+function render(name){
+  const isAuth=AUTH.includes(name);
+  document.body.classList.toggle('auth',isAuth);
+  if(isAuth){topbar.innerHTML=''}
+  else if(TABS.includes(name)){
+    topbar.className='topbar';
+    topbar.innerHTML='<button class="brand" data-go="home"><span class="logo">'+ic('smile','i')+'</span>alongside</button>'+
+      '<button class="circlebtn" data-go="settings" aria-label="Notifications and settings">'+ic('bell')+'</button>';
+  } else {
+    topbar.className='topbar contextual';
+    topbar.innerHTML='<button class="backbtn" id="backBtn">'+ic('chevl')+'Back</button><span class="ctxtitle">'+(TITLES[name]||'')+'</span>';
+  }
+  nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.tab===name?'page':'false'));
+  scroll.innerHTML='<section class="screen active">'+(VIEWS[name]?VIEWS[name]():'<p>…</p>')+'</section>';
+  scroll.scrollTop=0;
+  if(HOOKS[name])HOOKS[name]();
+  save();
+}
+
+/* ---------------- partials ---------------- */
+function journey(label,line,arrivalHTML,cls){
+  const rail=RAIL[line]||'var(--blue)';
+  return '<div class="journey'+(cls?' '+cls:'')+'"><svg class="map" viewBox="0 0 360 188" preserveAspectRatio="xMidYMid slice">'+
+   '<rect width="360" height="188" fill="#dde7df"/>'+
+   '<path d="M275-10c-30 48 16 70-13 105s-11 70-34 95" fill="none" stroke="#bcdbe0" stroke-width="34"/>'+
+   '<path d="m-20 52 150 11 40-72M-10 132l140-46 92 22 164-84M76 0l5 188M190 0l22 188M330 0l-68 188" fill="none" stroke="#f8fbf6" stroke-width="9"/>'+
+   '<path d="M38 140 128 86 222 108 352 40" fill="none" stroke="'+rail+'" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="3 8"/>'+
+   '<circle cx="128" cy="86" r="14" fill="#eef7f1"/><circle cx="128" cy="86" r="7" fill="'+rail+'" stroke="#fff" stroke-width="3"/>'+
+   '<circle cx="352" cy="40" r="9" fill="#fff" stroke="'+rail+'" stroke-width="3.5"/></svg>'+
+   '<div class="maplabel">'+esc(label)+'</div>'+(arrivalHTML||'')+'</div>';
+}
+function arrivalBar(line,dest,mins){
+  return '<div class="arrival"><div class="dest"><span class="linechip" data-line="'+line+'">'+line+'</span>'+ic('train')+'<span class="dname">To '+esc(dest)+'</span></div>'+
+    '<div class="mins"><strong>'+mins+' min</strong>Arriving</div></div>';
+}
+function routeSummaryBand(id){const r=BASE[id];return '<div class="band"><strong>'+esc(originShort())+' → '+esc(S.destination)+'</strong><p>'+esc(r.name)+' · '+routeMins(id)+' min · '+r.line+'</p></div>'}
+function crowdStrip(line){return '<div class="crowd"><div class="car busy"><small>Front</small><b>Busy</b></div><div class="car quiet pick"><small>Middle</small><b>Quiet</b></div><div class="car"><small>Rear</small><b>Some</b></div></div>'}
+
+/* ================= WELCOME / ONBOARDING ================= */
+VIEWS.welcome=()=>'<div class="centerblock">'+
+  '<div class="biglogo">'+ic('smile')+'</div>'+
+  '<h1 class="welcome-h">alongside</h1>'+
+  '<p class="welcome-tag">See what\'s ahead on your trip — and take someone with you when you travel.</p></div>'+
+  '<div class="actions"><button class="btn btn-primary" data-go="onb1">Get started</button>'+
+  '<p class="authlink">Already have an account? <button data-go="login">Log in</button></p>'+
+  '<p class="tiny">Prototype for study · sample data · no real tracking, messages or calls.</p></div>';
+
+function slide(n,icon,title,body){
+  return '<div class="dots">'+[1,2,3].map(i=>'<i class="'+(i===n?'on':'')+'"></i>').join('')+'</div>'+
+   '<div class="onb-mid">'+
+     '<div class="slide-illus"><span class="ring" style="width:150px;height:150px"></span><span class="ring" style="width:220px;height:220px"></span>'+ic(icon)+'</div>'+
+     '<h2>'+title+'</h2><p>'+body+'</p></div>'+
+   '<div class="actions"><button class="btn btn-primary" data-go="'+(n<3?'onb'+(n+1):'signup')+'">'+(n<3?'Next':'Create account')+'</button>'+
+   (n<3?'<p class="authlink"><button data-go="signup">Skip</button></p>':'<p class="authlink">Have an account? <button data-go="login">Log in</button></p>')+'</div>';
+}
+VIEWS.onb1=()=>slide(1,'flag','Reports from real riders','See what other travellers have flagged on your line — crowding, a confrontation, poor lighting. Reports are anonymous and fade as they get older.');
+VIEWS.onb2=()=>slide(2,'route','Choose a calmer route','Compare routes by what matters tonight, not just speed. Each option shows why it\'s suggested, so you decide.');
+VIEWS.onb3=()=>slide(3,'users','Never travel alone','Share your trip with someone you trust. They see your live location and ETA, and get a nudge if you go off route or run late.');
+
+VIEWS.signup=()=>'<div class="pagehead"><h1>Create your account</h1><p>Takes a few seconds. You can change anything later.</p></div>'+
+  '<form id="signupForm" novalidate>'+
+  '<label class="field"><span>Your name</span><div class="inputwrap">'+ic('user')+'<input id="suName" autocomplete="name" placeholder="Elis" value="'+esc(S.user.name)+'"></div></label>'+
+  '<label class="field"><span>Email</span><div class="inputwrap">'+ic('mail')+'<input id="suEmail" type="email" autocomplete="email" placeholder="you@email.com"></div></label>'+
+  '<label class="field"><span>Password</span><div class="inputwrap">'+ic('lock')+'<input id="suPass" type="password" autocomplete="new-password" placeholder="At least 6 characters"></div></label>'+
+  '<p class="err" id="suErr" hidden></p>'+
+  '<div class="divider">or</div>'+
+  '<button class="social" type="button" data-signup-social>'+ic('google')+'Continue with Google</button>'+
+  '</form>'+
+  '<div class="actions"><button class="btn btn-primary" type="submit" form="signupForm">Create account</button>'+
+  '<p class="authlink">Already have an account? <button data-go="login">Log in</button></p></div>';
+
+VIEWS.login=()=>'<div class="pagehead"><h1>Welcome back</h1><p>Log in to pick up where you left off.</p></div>'+
+  '<form id="loginForm" novalidate>'+
+  '<label class="field"><span>Email</span><div class="inputwrap">'+ic('mail')+'<input id="liEmail" type="email" autocomplete="email" placeholder="you@email.com"></div></label>'+
+  '<label class="field"><span>Password</span><div class="inputwrap">'+ic('lock')+'<input id="liPass" type="password" autocomplete="current-password" placeholder="Your password"></div></label>'+
+  '<p class="authlink" style="text-align:right;margin-top:-4px"><button type="button" data-toast="Password reset|This is a prototype — nothing is sent.">Forgot password?</button></p>'+
+  '<div class="divider">or</div>'+
+  '<button class="social" type="button" data-signup-social>'+ic('google')+'Continue with Google</button></form>'+
+  '<div class="actions"><button class="btn btn-primary" type="submit" form="loginForm">Log in</button>'+
+  '<p class="authlink">New here? <button data-go="signup">Create an account</button></p></div>';
+
+VIEWS.setPerms=()=>'<div class="pagehead"><span class="eyebrow">Step 1 of 3</span><h1>What Alongside uses</h1><p>Only what it needs, only while you travel.</p></div>'+
+  '<div class="card" style="padding:4px 16px">'+
+  '<div class="permrow">'+ic('pin')+'<div><strong>Location — while travelling</strong><p>To show live trains near you and share your trip. Off when you\'re not on a journey.</p></div></div>'+
+  '<div class="permrow">'+ic('eyeoff')+'<div><strong>Anonymous reports</strong><p>Reports you send are never tied to your name or account.</p></div></div>'+
+  '<div class="permrow">'+ic('bell')+'<div><strong>Notifications</strong><p>Check-ins during a trip, and alerts if a shared trip goes off track.</p></div></div></div>'+
+  '<div class="actions"><button class="btn btn-primary" data-go="setJourney">Allow and continue</button>'+
+  '<button class="btn btn-ghost" data-go="setJourney">Not now</button></div>';
+
+VIEWS.setJourney=()=>'<div class="pagehead"><span class="eyebrow">Step 2 of 3</span><h1>Your usual journey</h1><p>We\'ll put this on your home screen. You can change it before any trip.</p></div>'+
+  '<form id="journeyForm" novalidate>'+
+  '<label class="field"><span>From</span><div class="inputwrap">'+ic('pin')+'<input id="jFrom" autocomplete="off" placeholder="e.g. Liverpool Station" value="'+esc(S.origin)+'"></div></label>'+
+  '<div style="text-align:center;color:var(--faint);margin:-6px 0 6px">'+ic('swap')+'</div>'+
+  '<label class="field"><span>To</span><div class="inputwrap">'+ic('pin')+'<input id="jTo" autocomplete="off" placeholder="Where do you usually head?" value="'+esc(S.destination)+'"></div></label>'+
+  '<p class="err" id="jErr" hidden></p></form>'+
+  '<div class="actions"><button class="btn btn-primary" type="submit" form="journeyForm">Continue</button></div>';
+
+VIEWS.setContacts=()=>'<div class="pagehead"><span class="eyebrow">Step 3 of 3</span><h1>Add a trusted contact</h1><p>Someone you\'d want to reach quickly — they can see a shared trip and get alerts. This is the heart of Alongside.</p></div>'+
+  '<div id="setupContactList">'+contactCards()+'</div>'+
+  '<button class="btn btn-tint" data-go="addContact">'+ic('plus')+'Add a contact</button>'+
+  '<div class="actions"><button class="btn btn-primary" data-go="setDone">'+(S.contacts.length?'Finish':'Finish — I\'ll add one later')+'</button></div>';
+
+VIEWS.setDone=()=>'<div class="centerblock"><div class="resultmark">'+ic('check')+'</div>'+
+  '<h1 style="font-size:28px">You\'re all set, '+esc(S.user.name||'there')+'</h1>'+
+  '<p style="color:var(--muted);max-width:280px;margin-top:10px">Alongside is ready. Your usual trip to '+esc(S.destination)+' is on your home screen.</p></div>'+
+  '<div class="actions"><button class="btn btn-primary" id="enterApp">Open Alongside</button></div>';
+
+/* ================= HOME ================= */
+VIEWS.home=()=>{
+  const id=S.trip.active||S.trip.ended?S.trip.routeId:S.routeId, r=BASE[id];
+  const night=isNight()&&S.settings.nightNudge&&!S.nudgeDismissed;
+  return '<div class="pagehead"><h1>'+(S.trip.active?'On your way, ':'Heading out, ')+esc(S.user.name||'there')+'</h1></div>'+
+   (night?'<div class="nightcue"><span class="ic">'+ic('moon')+'</span><div><strong>Quieter line this hour</strong><p>Fewer people about after dark. Trip watch is a good idea tonight.</p></div><button class="x" id="dismissNudge" aria-label="Dismiss">'+ic('x')+'</button></div>':'')+
+   '<button class="destpick" data-go="destination"><span class="ic">'+ic('pin')+'</span><span><small>Where are you going?</small><strong>'+esc(S.destination)+'</strong></span><span class="chev">'+ic('chevr')+'</span></button>'+
+   journey(S.trip.active?'Journey in progress':S.origin, r.line, arrivalBar(r.line,S.destination,routeMins(id)), 'tall')+
+   (S.trip.active?'<div class="band" style="margin-top:12px"><strong>Next step</strong><p>Board '+r.line+' at '+esc(S.origin)+'</p></div>':'')+
+   '<div class="sectionhead"><h2>'+ic('flag')+'Recent reports</h2><button class="link" data-go="routes">View routes</button></div>'+
+   '<div class="railfilter" id="railFilter">'+['T2','T8','T3'].map(l=>'<button data-rl="'+l+'" aria-pressed="'+(l===repLine)+'" style="--rail:'+RAIL[l]+'">'+l+'</button>').join('')+'</div>'+
+   '<div class="reports" id="reportList"></div>'+
+   '<div class="sectionhead"><h2>'+ic('users')+'Carriage crowd</h2><span style="font-size:12px;color:var(--muted)">'+r.line+' · now</span></div>'+
+   crowdStrip(r.line)+
+   '<div style="height:18px"></div>'+
+   '<button class="btn btn-tint" data-go="watch">'+ic('activity')+(S.trip.active?'View your trip watch':'Start trip watch')+'</button>';
+};
+HOOKS.home=()=>{
+  renderReports();
+  const rf=$('#railFilter'); if(rf)rf.addEventListener('click',e=>{const b=e.target.closest('[data-rl]');if(!b)return;repLine=b.dataset.rl;rf.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));renderReports()});
+  const dn=$('#dismissNudge'); if(dn)dn.addEventListener('click',()=>{S.nudgeDismissed=true;save();const el=$('.nightcue');if(el)el.remove()});
+};
+function renderReports(){
+  const host=$('#reportList'); if(!host)return;
+  const list=REP[repLine].filter(x=>x.age!=='expired');
+  if(!list.length){host.innerHTML='<p class="emptyreports">No current reports for '+repLine+'.</p>';return}
+  host.innerHTML=list.map((x,i)=>'<button class="report '+(x.sev==='amber'?'amber':'')+(x.age==='fading'?' fading':'')+'" data-rep="'+i+'">'+
+    '<div class="rtop"><strong>'+esc(x.stn)+'</strong><span class="badge '+(x.sev==='amber'?'amber':'')+'">'+(x.sev==='amber'?'Crowding':'Incident')+'</span></div>'+
+    '<p class="what">'+esc(x.what)+'</p>'+
+    '<div class="rfoot">'+ic('clock')+x.mins+' min ago'+(x.age==='fading'?' · fading':'')+
+      '<span class="verify">'+ic('checkcircle')+x.conf+' confirmed</span></div></button>').join('');
+  host.querySelectorAll('[data-rep]').forEach(b=>b.addEventListener('click',()=>openReport(repLine,+b.dataset.rep)));
+}
+
+/* ================= ROUTES ================= */
+let priority='reports', inspect='report';
+VIEWS.routes=()=>'<div class="pagehead"><h1>Choose a route</h1></div>'+
+  routeSummaryBand(S.routeId)+'<div style="height:16px"></div>'+
+  '<div class="priorities" id="prios">'+
+    '<button data-p="reports" aria-pressed="'+(priority==='reports')+'">Report-aware</button>'+
+    '<button data-p="time" aria-pressed="'+(priority==='time')+'">Fastest</button>'+
+    '<button data-p="changes" aria-pressed="'+(priority==='changes')+'">Fewest changes</button></div>'+
+  '<div id="routeList"></div>'+
+  '<p class="tiny">Ranked by recent reports and crowding — not a safety score. You choose.</p>';
+HOOKS.routes=()=>{renderRoutes();
+  $('#prios').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;priority=b.dataset.p;$('#prios').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));renderRoutes()})};
+function renderRoutes(){
+  const host=$('#routeList');
+  host.innerHTML=ORDER[priority].map(id=>{const r=BASE[id];
+    return '<button class="routeopt '+(id===S.routeId?'chosen':'')+'" data-route="'+id+'">'+
+     '<div class="otop"><span class="oname">'+r.name+'</span><span class="odur">'+routeMins(id)+' <small>min</small></span></div>'+
+     '<div class="legs"><span>'+ic('footprints')+'Walk '+r.walk+'</span><span class="linechip" data-line="'+r.line+'">'+r.line+'</span><span>'+ic('swap')+r.changes+' '+(r.changes===1?'change':'changes')+'</span></div>'+
+     '<div class="evidence">'+r.tags.map(t=>'<span class="'+t[1]+'">'+t[0]+'</span>').join('')+'</div>'+
+     '<div class="pick">'+(id===S.routeId?'Selected':'See details')+' '+ic('chevr')+'</div></button>'}).join('');
+  host.querySelectorAll('[data-route]').forEach(b=>b.addEventListener('click',()=>{inspect=b.dataset.route;go('routeDetail')}));
+}
+VIEWS.routeDetail=()=>{const r=BASE[inspect];
+  return journey(S.origin,r.line)+
+   '<div class="band" style="margin:14px 0"><strong>'+esc(originShort())+' → '+esc(S.destination)+'</strong><p>'+r.name+' · '+routeMins(inspect)+' min · '+r.line+'</p></div>'+
+   '<div class="sectionhead"><h2>'+ic('users')+'Carriage crowd · '+r.line+'</h2></div>'+crowdStrip(r.line)+
+   '<div class="sectionhead"><h2>'+ic('train')+'Your journey</h2></div>'+
+   '<ul class="steps">'+r.steps.map(s=>'<li><strong>'+esc(s[0].replace('[ORIGIN]',S.origin).replace('[DEST]',S.destination))+'</strong><span>'+esc(s[1].replace('[MINS]',routeMins(inspect)))+'</span></li>').join('')+'</ul>'+
+   '<div class="sectionhead"><h2>'+ic('info')+'Why this route</h2></div><div class="prose">'+esc(r.why)+'</div>'+
+   '<div class="actions"><button class="btn btn-primary" id="useRoute">'+ic('check')+'Use this route</button>'+
+   '<button class="btn btn-tint" id="shareFromRoute">'+ic('share')+'Share this trip</button></div>';
+};
+HOOKS.routeDetail=()=>{
+  $('#useRoute').addEventListener('click',()=>{S.routeId=inspect;S.trip={active:true,ended:false,routeId:inspect,checked:false};toast('Route set','Trip watch is ready when you are.');go('home',{reset:true})});
+  $('#shareFromRoute').addEventListener('click',()=>{shareIntent=inspect;go('share')});
+};
+
+/* ================= REPORT ================= */
+const RISKS=[['Confrontation','shield'],['Harassment','eyeoff'],['Intoxicated behaviour','activity'],['Overcrowding','users'],['Poor lighting','moon'],['Someone acting concerning','flag']];
+let draft={};
+VIEWS.report=()=>'<div class="pagehead"><h1>Report a situation</h1><p>Describe what happened, not what someone looks like. It stays anonymous.</p></div>'+
+  journey('Example location','T2',null,'short')+
+  '<form id="reportForm" novalidate style="margin-top:16px">'+
+  '<label class="field"><span>Location</span><div class="inputwrap">'+ic('pin')+'<input id="rLoc" value="Liverpool Station"></div></label>'+
+  '<label class="field"><span>When</span><select id="rTime"><option>Just now</option><option>5 minutes ago</option><option>15 minutes ago</option></select></label>'+
+  '<div class="field"><span>What happened?</span><div class="riskgrid">'+
+    RISKS.map(x=>'<label class="riskopt"><input type="radio" name="risk" value="'+x[0]+'">'+ic(x[1])+x[0]+'</label>').join('')+'</div></div>'+
+  '<label class="field"><span>Add detail <small style="color:var(--muted);font-weight:500">(optional)</small></span><textarea id="rNote" maxlength="300" placeholder="e.g. near the platform entrance"></textarea></label>'+
+  '<p class="err" id="rErr" hidden></p>'+
+  '<p class="hint">'+ic('eyeoff')+'Anonymous · not linked to your account · prototype only.</p></form>'+
+  '<div class="actions"><button class="btn btn-primary" type="submit" form="reportForm">Review report</button></div>';
+HOOKS.report=()=>{
+  $('#reportForm').addEventListener('submit',e=>{e.preventDefault();
+    const loc=$('#rLoc').value.trim(), risk=document.querySelector('input[name=risk]:checked'), err=$('#rErr');
+    if(!loc){err.textContent='Add a location to continue.';err.hidden=false;return}
+    if(!risk){err.textContent='Choose what happened to continue.';err.hidden=false;return}
+    draft={loc,risk:risk.value,time:$('#rTime').value,note:$('#rNote').value.trim()};go('reportReview')});
+};
+VIEWS.reportReview=()=>{const f=[['Location',draft.loc],['When',draft.time],['Situation',draft.risk],['Identity','Anonymous']];if(draft.note)f.push(['Detail',draft.note]);
+  return '<div class="pagehead"><h1>Check your report</h1><p>Make sure it reads right. Reports fade and expire over time.</p></div>'+
+   '<dl class="facts">'+f.map(x=>'<div><dt>'+x[0]+'</dt><dd>'+esc(x[1])+'</dd></div>').join('')+'</dl>'+
+   '<div class="actions"><button class="btn btn-primary" id="sendRep">'+ic('flag')+'Submit report</button>'+
+   '<button class="btn btn-ghost" data-go="report">Edit</button></div>';
+};
+HOOKS.reportReview=()=>$('#sendRep').addEventListener('click',()=>go('reportDone'));
+VIEWS.reportDone=()=>'<div class="centerblock"><div class="resultmark">'+ic('check')+'</div>'+
+  '<h1 style="font-size:26px">Thanks — report sent</h1><p style="color:var(--muted);max-width:280px;margin-top:10px">Other riders on this line will see it. It\'ll fade as it gets older.</p>'+
+  '<p class="tiny" style="margin-top:14px">Prototype — nothing was really submitted.</p></div>'+
+  '<div class="actions"><button class="btn btn-primary" data-go="home">Back to home</button>'+
+  '<button class="btn btn-tint" data-go="report">Report something else</button></div>';
+
+let openedRep=null;
+function openReport(line,i){openedRep={line,i};go('reportDetail')}
+VIEWS.reportDetail=()=>{const x=REP[openedRep.line][openedRep.i];
+  const pct=x.age==='recent'?'82%':x.age==='fading'?'34%':'0%';
+  const ageTxt=x.age==='recent'?'Recent · relevance high':x.age==='fading'?'Fading · conditions may have changed':'Expired';
+  return '<div class="band"><strong>'+esc(x.stn)+'</strong><p>'+esc(x.what)+'</p></div>'+
+   '<dl class="facts" style="margin-top:14px"><div><dt>Status</dt><dd>'+(x.sev==='amber'?'Crowding':'Incident')+' reported · unverified</dd></div>'+
+   '<div><dt>Confirmed by riders</dt><dd id="confCount">'+x.conf+' '+(x.conf===1?'person':'people')+'</dd></div>'+
+   '<div><dt>Reported</dt><dd>'+x.mins+' minutes ago</dd></div></dl>'+
+   '<div class="sectionhead"><h2>'+ic('clock')+'Relevance</h2><span style="font-size:12px;color:var(--muted)">'+ageTxt+'</span></div>'+
+   '<div class="soft"><div style="height:6px;background:var(--line2);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+';background:var(--blue);border-radius:4px"></div></div>'+
+   '<p style="font-size:12.5px;color:var(--muted);margin:10px 0 0">Reports lose weight as they age, then disappear — so an old flag doesn\'t haunt a station.</p></div>'+
+   '<div class="actions"><button class="btn btn-tint" id="confirmSeen">'+ic('checkcircle')+'I\'m seeing this too</button>'+
+   '<p class="tiny">Confirming adds weight to a report without naming anyone.</p></div>';
+};
+HOOKS.reportDetail=()=>{const btn=$('#confirmSeen');btn.addEventListener('click',()=>{const x=REP[openedRep.line][openedRep.i];x.conf++;$('#confCount').textContent=x.conf+' people';btn.innerHTML=ic('check')+'Thanks — confirmed';btn.disabled=true;btn.style.opacity=.7})};
+
+/* ================= SAFETY HUB ================= */
+VIEWS.safety=()=>'<div class="pagehead"><h1>Safety</h1><p>Everything in one place. Nothing here contacts anyone until you choose to.</p></div>'+
+  '<button class="btn btn-danger" data-go="help" style="margin-bottom:14px">'+ic('shield')+'Get help now</button>'+
+  '<div class="hubgrid">'+
+   '<button class="hubtile" data-go="share"><span class="ic" style="background:var(--blue)">'+ic('share')+'</span><strong>Share trip</strong><small>Send your live location to someone you trust</small></button>'+
+   '<button class="hubtile" data-go="watch"><span class="ic" style="background:var(--clear)">'+ic('activity')+'</span><strong>Trip watch</strong><small>Check-ins and off-route alerts</small></button>'+
+   '<button class="hubtile" data-go="report"><span class="ic" style="background:var(--amber)">'+ic('flag')+'</span><strong>Report</strong><small>Flag a situation on your line</small></button>'+
+   '<button class="hubtile" data-go="locationCode"><span class="ic" style="background:#5a4fcf">'+ic('pin')+'</span><strong>Location code</strong><small>A short code for where you are</small></button>'+
+   '<button class="hubtile full" data-go="contacts"><span class="ic" style="background:var(--blue-ink)">'+ic('users')+'</span><div><strong>Trusted contacts</strong><small>'+(S.contacts.length?esc(S.contacts.map(c=>c.name).join(', ')):'Add someone you trust')+'</small></div>'+ic('chevr','i')+'</button></div>';
+
+/* ================= SHARE ================= */
+let shareIntent=null, shareContactName=null;
+VIEWS.share=()=>{const rid=shareIntent||(S.trip.active?S.trip.routeId:S.routeId); shareIntent=rid;
+  const contacts=S.contacts.length?S.contacts:[{name:'Mum',rel:'Family'}];
+  return '<div class="pagehead"><h1>Share your trip</h1></div>'+routeSummaryBand(rid)+
+   '<p class="eyebrow" style="margin:18px 2px 10px">Choose who sees it</p>'+
+   '<div>'+contacts.map((c,i)=>'<label class="radio-contact"><input type="radio" name="sc" value="'+esc(c.name)+'" '+(i===0?'checked':'')+'><span class="avatar sm">'+initial(c.name)+'</span><span class="meta"><strong>'+esc(c.name)+'</strong><small>'+esc(c.rel||'Contact')+'</small></span><span class="check"></span></label>').join('')+'</div>'+
+   '<button class="link" data-go="addContact" style="margin-bottom:8px">'+ic('plus','i')+' Add another contact</button>'+
+   '<div class="card" style="padding:4px 16px;margin-top:6px">'+
+    '<div class="permrow">'+ic('pin')+'<div><strong>Live location, route and ETA</strong></div></div>'+
+    '<div class="permrow">'+ic('share')+'<div><strong>Opens as a text link</strong><p>They don\'t need the app.</p></div></div>'+
+    '<div class="permrow">'+ic('eyeoff')+'<div><strong>Stop anytime</strong></div></div></div>'+
+   '<div class="actions"><button class="btn btn-primary" id="startShare">'+ic('share')+'Start sharing</button>'+
+   '<p class="tiny">Preview only · no location or message is sent.</p></div>';
+};
+HOOKS.share=()=>$('#startShare').addEventListener('click',()=>{const c=document.querySelector('input[name=sc]:checked');shareContactName=c?c.value:'Mum';
+  S.sharing={active:true,contact:shareContactName,routeId:shareIntent};S.trip={active:true,ended:false,routeId:shareIntent,checked:false};save();go('watch')});
+
+VIEWS.sharing=()=>{const r=BASE[S.sharing.routeId||S.routeId];
+  return '<div class="sectionhead" style="margin-top:4px"><h2 style="font-size:15px;color:var(--clear)">'+ic('activity')+'Sharing with '+esc(S.sharing.contact)+'</h2></div>'+
+   routeSummaryBand(S.sharing.routeId||S.routeId)+
+   '<p class="eyebrow" style="margin:18px 2px 8px">They receive this message</p>'+
+   '<div class="prose">To '+esc(S.sharing.contact)+': Elis is travelling from '+esc(originShort())+' to '+esc(S.destination)+' on the '+r.line+'. Live location: [map link]. ETA about '+routeMins(S.sharing.routeId||S.routeId)+' min.</div>'+
+   '<div class="actions"><button class="btn btn-tint" data-go="recipient">'+ic('eyeoff')+'Preview what they see</button>'+
+   '<button class="btn btn-ghost" id="stopShare2">Stop sharing</button></div>';
+};
+HOOKS.sharing=()=>$('#stopShare2').addEventListener('click',()=>{S.sharing.active=false;save();toast('Sharing stopped','Your location is private again.');go('watch')});
+
+VIEWS.recipient=()=>journey('Elis · live',BASE[S.sharing.routeId||S.routeId].line)+
+  '<div class="band" style="margin:14px 0"><strong>Elis is on the way</strong><p>'+esc(originShort())+' → '+esc(S.destination)+' · ETA ~'+routeMins(S.sharing.routeId||S.routeId)+' min</p></div>'+
+  '<dl class="facts"><div><dt>Shared by</dt><dd>Elis</dd></div><div><dt>You can see</dt><dd>Live location, route and ETA</dd></div><div><dt>How</dt><dd>Text link · no app needed</dd></div></dl>'+
+  '<p class="tiny" style="margin-top:14px">This is the view your contact gets. Preview only.</p>';
+
+/* ================= TRIP WATCH ================= */
+VIEWS.watch=()=>{const id=S.trip.active||S.trip.ended?S.trip.routeId:S.routeId;const r=BASE[id];const sharing=S.sharing.active;
+  return journey(S.trip.active?'Journey in progress':'Your journey',r.line)+
+   '<div class="band" style="margin:14px 0"><strong>'+esc(originShort())+' → '+esc(S.destination)+'</strong><p>'+r.name+' · ETA ~'+routeMins(id)+' min · '+r.line+'</p></div>'+
+   '<div class="sectionhead"><h2>'+ic('activity')+'Progress</h2><span style="font-size:12px;color:var(--muted)">'+(S.trip.ended?'Ended':sharing?'Sharing with '+esc(S.sharing.contact):S.trip.active?'Not sharing':'Not started')+'</span></div>'+
+   '<div class="soft"><div class="wline done"><span class="wmark"></span><div><strong>Boarded at '+esc(S.origin)+'</strong><small>9:38</small></div></div>'+
+   '<div class="wline"><span class="wmark"></span><div><strong>'+(r.changes?'Change trains':'Direct service')+'</strong><small>on the way</small></div></div>'+
+   '<div class="wline"><span class="wmark"></span><div><strong>Arrive '+esc(S.destination)+'</strong><small>ETA ~'+routeMins(id)+' min</small></div></div></div>'+
+   (sharing?'<div class="checkin"><strong>Still all good, '+esc(S.user.name||'Elis')+'?</strong><p>'+(S.trip.checked?'Checked in — nothing sent to '+esc(S.sharing.contact)+'.':'We\'ll ask now and then. If you don\'t answer, go off route, or run late, '+esc(S.sharing.contact)+' gets an alert with your location.')+'</p>'+
+     '<div class="btnrow"><button class="btn btn-soft" id="imFine">'+ic('check')+'I\'m fine</button><button class="btn btn-danger" data-go="help">I need help</button></div></div>':'')+
+   '<div class="actions">'+
+   (sharing?'<button class="btn btn-tint" data-go="sharing">'+ic('share')+'Sharing details</button>':'<button class="btn btn-primary" data-go="share">'+ic('share')+'Set up sharing</button>')+
+   (S.trip.active?'<button class="btn btn-ghost" id="endTrip">End trip</button>':'')+'</div>';
+};
+HOOKS.watch=()=>{const f=$('#imFine');if(f)f.addEventListener('click',()=>{S.trip.checked=true;save();toast('Checked in','Nothing was sent.');render('watch')});
+  const e=$('#endTrip');if(e)e.addEventListener('click',()=>{S.trip={active:false,ended:true,routeId:S.trip.routeId,checked:false};S.sharing.active=false;save();toast('Trip ended','Sharing stopped.');go('home',{reset:true})})};
+
+/* ================= GET HELP ================= */
+let helpKind='contact';
+VIEWS.help=()=>journey('Platform 2, Liverpool',BASE[S.routeId].line,null,'short')+
+  '<div class="facts" style="margin-top:14px"><div><dt>Your location</dt><dd>Platform 2, Liverpool Station, NSW</dd></div></div>'+
+  '<div style="height:16px"></div>'+
+  '<button class="btn btn-danger" id="h_call">'+ic('phone')+'Call 000</button>'+
+  '<div style="text-align:center;margin:10px 0 4px"><span class="previewtag">'+ic('info')+'Preview — real emergency calling comes later</span></div>'+
+  '<div style="height:10px"></div>'+
+  '<button class="btn btn-soft" id="h_contact">'+ic('users')+'Alert '+(S.contacts[0]?esc(S.contacts[0].name):'a trusted contact')+'</button>'+
+  '<div style="height:10px"></div><button class="btn btn-soft" id="h_staff">'+ic('headphones')+'Alert transit staff</button>'+
+  '<div style="height:10px"></div><button class="btn btn-soft" id="h_silent">'+ic('belloff')+'Send a silent alert</button>'+
+  '<div style="height:10px"></div><button class="btn btn-tint" data-go="locationCode">'+ic('pin')+'Show my location code</button>'+
+  '<p class="tiny" style="margin-top:14px">Preview only · no calls, alerts or messages are sent.</p>';
+HOOKS.help=()=>{
+  $('#h_call').addEventListener('click',()=>{helpKind='call';go('helpConfirm')});
+  $('#h_contact').addEventListener('click',()=>{helpKind='contact';go('helpConfirm')});
+  $('#h_staff').addEventListener('click',()=>{helpKind='staff';go('helpConfirm')});
+  $('#h_silent').addEventListener('click',()=>{helpKind='silent';go('helpConfirm')});
+};
+VIEWS.helpConfirm=()=>{const label={call:'Call 000',contact:'Alert '+(S.contacts[0]?esc(S.contacts[0].name):'your contact'),staff:'Alert transit staff',silent:'Send silent alert'}[helpKind];
+  return '<div class="band"><strong>'+label+' · preview</strong><p>Example location: Platform 2, Liverpool Station, NSW</p></div>'+
+   '<p class="hint" style="margin-top:16px">'+ic('info')+'Hold the button for a second so this can\'t trigger by accident.</p>'+
+   '<div class="actions"><button class="btn btn-danger holdbtn" id="holdBtn"><span class="fill" id="holdFill"></span>'+ic('shield')+'Hold to confirm</button>'+
+   '<p class="tiny" id="holdMsg">Release early to cancel.</p>'+
+   '<button class="btn btn-ghost" data-go="help">Cancel</button></div>';
+};
+HOOKS.helpConfirm=()=>{
+  const b=$('#holdBtn'),fill=$('#holdFill'),msg=$('#holdMsg');let t,done=false;
+  const start=()=>{done=false;b.classList.add('holding');fill.style.transition='width 1s linear';requestAnimationFrame(()=>fill.style.width='100%');msg.textContent='Keep holding…';t=setTimeout(()=>{done=true;go('helpDone')},1000)};
+  const cancel=()=>{clearTimeout(t);if(done)return;b.classList.remove('holding');fill.style.transition='width .15s';fill.style.width='0';msg.textContent='Cancelled — hold for 1 second.'};
+  b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(x){}start()});
+  ['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,cancel));
+};
+VIEWS.helpDone=()=>{const txt={call:'Emergency call preview complete',contact:'Your trusted contact would now be alerted',staff:'Transit staff would now be notified',silent:'Silent alert preview complete'}[helpKind];
+  return '<div class="centerblock"><div class="resultmark help">'+ic('shield')+'</div>'+
+   '<h1 style="font-size:24px">'+txt+'</h1><p style="color:var(--muted);max-width:280px;margin-top:10px">No call was made and no alert was sent. This is a prototype.</p></div>'+
+   '<div class="actions"><button class="btn btn-primary" data-go="help">Back to help</button><button class="btn btn-tint" data-go="home">Home</button></div>';
+};
+VIEWS.locationCode=()=>'<div class="codebox"><div class="code">4RG-82K</div><p>Fictional example · not usable by emergency services</p></div>'+
+  '<dl class="facts" style="margin-top:14px"><div><dt>Points to</dt><dd>Platform 2, Liverpool Station, NSW</dd></div></dl>'+
+  '<p class="hint" style="margin-top:14px">'+ic('info')+'The idea: read out or paste a short code instead of explaining where you are when you\'re stressed. For a real 000 call, always use the address.</p>'+
+  '<div class="actions"><button class="btn btn-tint" data-toast="Copied|Platform 2, Liverpool Station, NSW">'+ic('pin')+'Copy location</button></div>';
+
+/* ================= DESTINATION / SAVED ================= */
+VIEWS.destination=()=>'<div class="pagehead"><h1>Plan a trip</h1><p>Type where you\'re headed — it can be anywhere.</p></div>'+
+  (S.trip.active?'<p class="hint">'+ic('info')+'End your current trip before changing it.</p>':'')+
+  '<form id="destForm" novalidate>'+
+  '<label class="field"><span>From</span><div class="inputwrap">'+ic('pin')+'<input id="dFrom" autocomplete="off" value="'+esc(S.origin)+'" '+(S.trip.active?'readonly':'')+'></div></label>'+
+  '<div style="text-align:center;color:var(--faint);margin:-6px 0 6px">'+ic('swap')+'</div>'+
+  '<label class="field"><span>To</span><div class="inputwrap">'+ic('pin')+'<input id="dTo" autocomplete="off" placeholder="Where are you going?" value="'+esc(S.destination)+'" '+(S.trip.active?'readonly':'')+'></div></label>'+
+  '<p class="err" id="dErr" hidden></p></form>'+
+  '<button class="btn btn-tint" data-go="savedRoutes">'+ic('star')+'Saved routes</button>'+
+  '<div class="actions"><button class="btn btn-primary" type="submit" form="destForm">Compare routes</button></div>';
+HOOKS.destination=()=>{
+  $('#destForm').addEventListener('submit',e=>{e.preventDefault();
+    if(S.trip.active){toast('Trip in progress','End it before changing it.');return}
+    const from=$('#dFrom').value.trim(), to=$('#dTo').value.trim(), err=$('#dErr');
+    if(!from){err.textContent='Add where you\'re starting from.';err.hidden=false;return}
+    if(!to){err.textContent='Add where you\'re going.';err.hidden=false;return}
+    S.origin=from;S.destination=to;save();go('routes')});
+};
+VIEWS.savedRoutes=()=>'<div class="pagehead"><h1>Saved routes</h1></div>'+
+  SAVED.map((s,i)=>'<button class="destpick" data-saved="'+i+'"><span class="ic">'+ic('star')+'</span><span><strong>'+esc(s.label)+'</strong><small>'+esc(s.sub)+'</small></span><span class="chev">'+ic('chevr')+'</span></button>').join('')+
+  '<p class="tiny" style="margin-top:6px">Sample saved journeys.</p>';
+HOOKS.savedRoutes=()=>scroll.querySelectorAll('[data-saved]').forEach(b=>b.addEventListener('click',()=>{const s=SAVED[+b.dataset.saved];if(S.trip.active){toast('Trip in progress','End it first.');return}S.destination=s.dest;S.routeId=s.route;save();go('routes')}));
+
+/* ================= CONTACTS ================= */
+function contactCards(){
+  if(!S.contacts.length)return '<p class="hint" style="justify-content:center;padding:10px 0">No contacts yet. Add someone you trust.</p>';
+  return S.contacts.map((c,i)=>'<div class="contact"><span class="avatar">'+initial(c.name)+'</span><div class="meta"><strong>'+esc(c.name)+'</strong><small>'+esc(c.rel||'Contact')+'</small></div><button class="del" data-del="'+i+'">'+ic('trash')+'</button></div>').join('');
+}
+VIEWS.contacts=()=>'<div class="pagehead"><h1>Trusted contacts</h1><p>The people you can share a trip with or alert quickly.</p></div>'+
+  '<div id="contactList">'+contactCards()+'</div>'+
+  '<button class="btn btn-tint" data-go="addContact">'+ic('plus')+'Add a contact</button>'+
+  '<p class="tiny" style="margin-top:12px">Sample contacts · no phone numbers are stored in this prototype.</p>';
+HOOKS.contacts=()=>bindDelete('#contactList');
+function bindDelete(sel){const host=$(sel);if(!host)return;host.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{S.contacts.splice(+b.dataset.del,1);save();host.innerHTML=contactCards();bindDelete(sel)}))}
+VIEWS.addContact=()=>'<div class="pagehead"><h1>Add a contact</h1></div>'+
+  '<form id="contactForm" novalidate>'+
+  '<label class="field"><span>Name</span><div class="inputwrap">'+ic('user')+'<input id="cName" placeholder="e.g. Mum, Alex"></div></label>'+
+  '<div class="field"><span>Relationship</span><div class="pill-select" id="cRel">'+['Family','Partner','Friend','Housemate'].map((r,i)=>'<button type="button" data-r="'+r+'" aria-pressed="'+(i===0)+'">'+r+'</button>').join('')+'</div></div>'+
+  '<p class="err" id="cErr" hidden></p></form>'+
+  '<div class="actions"><button class="btn btn-primary" type="submit" form="contactForm">Save contact</button></div>';
+HOOKS.addContact=()=>{let rel='Family';const rb=$('#cRel');rb.addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(!b)return;rel=b.dataset.r;rb.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+  $('#contactForm').addEventListener('submit',e=>{e.preventDefault();const n=$('#cName').value.trim();if(!n){$('#cErr').textContent='Enter a name.';$('#cErr').hidden=false;return}S.contacts.push({name:n,rel});save();toast('Contact added',n+' can now see your shared trips.');back()})};
+
+/* ================= PROFILE / SETTINGS ================= */
+VIEWS.profile=()=>'<div class="pagehead"><h1>You</h1></div>'+
+  '<div class="idhead"><span class="avatar lg">'+initial(S.user.name)+'</span><div><strong>'+esc(S.user.name||'Your name')+'</strong><small>'+(esc(S.user.email)||'Alongside member')+'</small></div></div>'+
+  '<button class="btn btn-soft" data-go="editProfile">'+ic('edit')+'Edit profile</button>'+
+  '<div class="sectionhead"><h2>'+ic('star')+'Your usual journey</h2></div>'+
+  '<div class="band"><strong>'+esc(originShort())+' → '+esc(S.destination)+'</strong><p>Saved · tap routes to compare</p></div>'+
+  '<div style="height:10px"></div><button class="btn btn-tint" data-go="savedRoutes">'+ic('map')+'Saved routes</button>'+
+  '<div class="sectionhead"><h2>'+ic('users')+'Trusted contacts</h2><button class="link" data-go="contacts">Manage</button></div>'+
+  (S.contacts.length?S.contacts.map(c=>'<div class="contact"><span class="avatar sm">'+initial(c.name)+'</span><div class="meta"><strong>'+esc(c.name)+'</strong><small>'+esc(c.rel||'Contact')+'</small></div></div>').join(''):'<p class="hint">No contacts yet.</p>')+
+  '<div class="sectionhead"><h2>'+ic('shield')+'Settings</h2></div>'+
+  '<button class="btn btn-soft" data-go="settings">'+ic('bell')+'Settings & privacy</button>'+
+  '<div class="actions"><button class="btn btn-ghost" id="logout">Log out</button></div>';
+HOOKS.profile=()=>$('#logout').addEventListener('click',()=>{S.loggedIn=false;save();stack=[];go('welcome')});
+
+VIEWS.editProfile=()=>'<div class="pagehead"><h1>Edit profile</h1></div>'+
+  '<div style="text-align:center;margin-bottom:18px"><span class="avatar lg" style="margin:0 auto">'+initial(S.user.name)+'</span></div>'+
+  '<form id="profForm"><label class="field"><span>Name</span><div class="inputwrap">'+ic('user')+'<input id="pName" value="'+esc(S.user.name)+'"></div></label>'+
+  '<label class="field"><span>Email</span><div class="inputwrap">'+ic('mail')+'<input id="pEmail" type="email" value="'+esc(S.user.email)+'"></div></label></form>'+
+  '<div class="actions"><button class="btn btn-primary" type="submit" form="profForm">Save changes</button></div>';
+HOOKS.editProfile=()=>$('#profForm').addEventListener('submit',e=>{e.preventDefault();S.user.name=$('#pName').value.trim()||S.user.name;S.user.email=$('#pEmail').value.trim();save();toast('Saved','Profile updated.');back()});
+
+VIEWS.settings=()=>'<div class="pagehead"><h1>Settings</h1></div>'+
+  '<div class="card" style="padding:0 16px">'+
+   setRow('reduceMotion','Reduce motion','Fewer animations')+
+   setRow('nightNudge','Night-time tips','Gentle reminders after dark')+
+   setRow('notify','Notifications','Trip check-ins and alerts')+'</div>'+
+  '<div class="sectionhead"><h2>'+ic('lock')+'Privacy</h2></div>'+
+  '<dl class="facts"><div><dt>Community reports</dt><dd>Anonymous by default</dd></div>'+
+   '<div><dt>Trip sharing</dt><dd>Only while your trip is active</dd></div>'+
+   '<div><dt>Location</dt><dd>Used during travel only</dd></div></dl>'+
+  '<div class="actions"><button class="btn btn-ghost" id="restart">Restart onboarding</button>'+
+  '<button class="btn btn-ghost" id="wipe" style="color:var(--warn);box-shadow:inset 0 0 0 1.5px #e8c6ca">Reset prototype</button>'+
+  '<p class="tiny">Alongside · prototype build · sample data only.</p></div>';
+function setRow(key,title,sub){return '<div class="setrow"><div class="lbl"><strong>'+title+'</strong><small>'+sub+'</small></div><input type="checkbox" class="switch" data-set="'+key+'" '+(S.settings[key]?'checked':'')+'></div>'}
+HOOKS.settings=()=>{
+  scroll.querySelectorAll('[data-set]').forEach(sw=>sw.addEventListener('change',()=>{S.settings[sw.dataset.set]=sw.checked;phone.classList.toggle('reduced',S.settings.reduceMotion);save()}));
+  $('#restart').addEventListener('click',()=>{S.onboarded=false;save();stack=[];go('setPerms')});
+  $('#wipe').addEventListener('click',()=>{try{localStorage.removeItem('alongside_v2')}catch(e){}S=structuredClone(DEFAULT);stack=[];go('welcome')});
+};
+
+/* ---------------- global events ---------------- */
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(g.dataset.go);return}
+  const bk=e.target.closest('#backBtn'); if(bk){back();return}
+  const tb=e.target.closest('[data-tab]'); if(tb){go(tb.dataset.tab,{reset:true});return}
+  const t=e.target.closest('[data-toast]'); if(t){const [a,b]=t.dataset.toast.split('|');toast(a,b||'')}
+  if(e.target.closest('[data-signup-social]')){S.loggedIn=true;if(!S.user.name)S.user.name='Elis';save();S.onboarded?go('home',{reset:true}):go('setPerms')}
+  if(e.target.closest('#enterApp')){S.onboarded=true;S.loggedIn=true;save();go('home',{reset:true})}
+});
+document.addEventListener('submit',e=>{
+  if(e.target.id==='signupForm'){e.preventDefault();
+    const n=$('#suName').value.trim(),em=$('#suEmail').value.trim(),pw=$('#suPass').value,err=$('#suErr');
+    if(!n){err.textContent='Enter your name.';err.hidden=false;return}
+    if(!/^\S+@\S+\.\S+$/.test(em)){err.textContent='Enter a valid email.';err.hidden=false;return}
+    if(pw.length<6){err.textContent='Password needs at least 6 characters.';err.hidden=false;return}
+    S.user.name=n;S.user.email=em;S.loggedIn=true;save();go('setPerms');
+  }
+  if(e.target.id==='loginForm'){e.preventDefault();
+    const em=$('#liEmail').value.trim();S.loggedIn=true;if(!S.user.email&&em)S.user.email=em;save();
+    S.onboarded?go('home',{reset:true}):go('setPerms');
+  }
+  if(e.target.id==='journeyForm'){e.preventDefault();
+    const from=$('#jFrom').value.trim(),to=$('#jTo').value.trim(),err=$('#jErr');
+    if(!from){err.textContent='Add where you usually start.';err.hidden=false;return}
+    if(!to){err.textContent='Add where you usually go.';err.hidden=false;return}
+    S.origin=from;S.destination=to;save();go('setContacts');
+  }
+});
+
+/* toast */
+let toastT;
+function toast(title,msg){clearTimeout(toastT);toastEl.innerHTML='<strong>'+esc(title)+'</strong>'+(msg?'<span>'+esc(msg)+'</span>':'');toastEl.classList.add('show');toastT=setTimeout(()=>toastEl.classList.remove('show'),3200)}
+
+/* clock */
+function tickClock(){const d=new Date();$('#clockNow').textContent=d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')}
+tickClock();setInterval(tickClock,15000);
+
+/* boot */
+phone.classList.toggle('reduced',S.settings.reduceMotion);
+if(S.loggedIn&&S.onboarded)go('home',{reset:true});
+else if(S.loggedIn&&!S.onboarded)go('setPerms');
+else go('welcome');
+</script>
+</body>
+</html>
