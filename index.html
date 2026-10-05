@@ -54,7 +54,7 @@ svg{display:block}
   box-shadow:0 44px 92px rgba(14,30,52,.44);overflow:hidden}
 .device::after{content:"";position:absolute;z-index:40;top:14px;left:50%;transform:translateX(-50%);width:120px;height:30px;background:#0f1620;border-radius:0 0 18px 18px;pointer-events:none}
 .viewport{position:relative;width:100%;height:100%;border-radius:42px;overflow:hidden;
-  background:linear-gradient(170deg,var(--app-bg-1),var(--app-bg-2) 55%,var(--app-bg-3));display:flex;flex-direction:column}
+  background:linear-gradient(180deg,var(--app-bg-1) 0%,var(--app-bg-1) 15%,var(--app-bg-2) 60%,var(--app-bg-3));display:flex;flex-direction:column}
 .statusbar{height:46px;flex:none;display:flex;align-items:flex-end;justify-content:space-between;padding:0 26px 6px;font-size:13.5px;font-weight:700;color:var(--ink);z-index:10}
 .statusbar .sig{display:flex;align-items:center;gap:6px}
 .statusbar .sig svg{width:17px;height:12px}
@@ -162,7 +162,7 @@ h1,h2,h3,h4{margin:0;letter-spacing:-.5px;line-height:1.14}
 .hint .i{width:17px;height:17px;flex:none;margin-top:1px;color:var(--faint)}
 
 /* ---------- onboarding ---------- */
-body.auth .viewport{background:linear-gradient(165deg,#f4f8fd,#e6f0fa 50%,#d2e2f4)}
+body.auth .viewport{background:linear-gradient(180deg,#eef4fb 0%,#eef4fb 15%,#e6f0fa 55%,#d2e2f4)}
 .biglogo{width:92px;height:92px;border-radius:26px;background:var(--blue);display:grid;place-items:center;color:#fff;box-shadow:0 20px 44px rgba(42,86,214,.4);margin-bottom:26px}
 .biglogo svg{width:52px;height:52px;stroke-width:2}
 .welcome-h{font-size:42px;font-weight:800;letter-spacing:-1.4px}
@@ -387,7 +387,8 @@ body.auth .viewport{background:linear-gradient(165deg,#f4f8fd,#e6f0fa 50%,#d2e2f
 @media(max-width:480px){
   body{overflow:auto}
   .stage{padding:0;display:block;height:auto;min-height:100%}
-  .device{width:100%;height:100vh;height:100dvh;max-height:none;border-radius:0;padding:0}
+  html,body{background:var(--app-bg-1)}
+  .device{width:100%;height:100vh;height:100dvh;max-height:none;border-radius:0;padding:0;background:var(--app-bg-1)}
   .device::after{display:none}
   .viewport{border-radius:0;height:100vh;height:100dvh;padding-top:env(safe-area-inset-top,0px)}
   .statusbar{display:none}
