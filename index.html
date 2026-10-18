@@ -40,9 +40,9 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cu
 
 /* ---------- app: screen frame ---------- */
 .screen{position:relative;width:100%;height:100%;flex:none;background:var(--a-bg);color:var(--a-ink);font-family:var(--font-ui);display:flex;flex-direction:column;overflow:hidden;isolation:isolate;font-size:15px;line-height:1.4}
-.backdrop{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.backdrop{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 150px);mask-image:linear-gradient(to bottom,transparent 0,#000 150px)}
 .blob{position:absolute;border-radius:50%}
-.blob-top{width:320px;height:320px;right:-130px;top:-110px;background:radial-gradient(circle,rgba(246,168,198,.55),rgba(246,168,198,0) 68%)}
+.blob-top{width:340px;height:340px;right:-140px;top:-40px;background:radial-gradient(circle,rgba(246,168,198,.55),rgba(246,168,198,0) 68%)}
 .blob-bottom{width:380px;height:380px;left:-190px;bottom:-120px;background:radial-gradient(circle,rgba(244,180,205,.5),rgba(244,180,205,0) 68%)}
 .safe-top{position:relative;z-index:2;flex:none;height:calc(var(--safe-t) + 12px)}
 .screen-body{position:relative;z-index:1;flex:1;min-height:0;overflow-y:auto;padding:4px 20px 36px;display:flex;flex-direction:column;gap:18px;scrollbar-width:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
@@ -896,7 +896,7 @@ function render(){
   requestAnimationFrame(() => positionTours(device));
   bindHold();
   clearTimeout(splashTimer);
-  if (current === 'splash') splashTimer = setTimeout(() => { if (current === 'splash') go('welcome', true); }, 1800);
+  if (current === 'splash') splashTimer = setTimeout(() => { if (current === 'splash') go('welcome', true); }, 2800);
 }
 /* Each screen change is a history entry, so the phone's own back gesture or button steps back through the prototype. */
 function go(id, replace){
